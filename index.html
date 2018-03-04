@@ -1,1 +1,125 @@
-hello
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <canvas id='gameCanvas' width="500" height="500">
+    </canvas>
+    <script>
+      var canvas;
+      var canvasContext;
+      var apple = [];
+      var tail = [[200,200],[225,200],[250,200],[275,200],[300,200]];
+      var direction = [1, 0];
+
+
+      /*Keypress event listener, changes the value of direction to move the desired way*/
+      document.addEventListener('keydown', (event) => {
+        switch (event.keyCode) {
+          case 37:
+          /*this prevent the snake from moving in the opposite way of the current movements*/
+            if(direction[0]===1){
+              break;
+            }
+            direction = [-1, 0];
+            break;
+          case 38:
+            if(direction[1]===1){
+              break;
+            }
+            direction = [0, -1];
+              break;
+          case 39:
+            if(direction[0]===-1){
+              break;
+            }
+            direction = [1, 0];
+              break;
+          case 40:
+            if(direction[1]===-1){
+              break;
+            }
+            direction = [0, 1];
+            break;
+        }
+      });
+
+      window.onload = function(){
+        canvas = document.getElementById('gameCanvas');
+        canvasContext =  canvas.getContext('2d');
+        drawSnakeAndApple();
+        generateApple();
+        var game = setInterval(moveSnake, 100);
+      }
+
+      function drawSnakeAndApple(){
+        canvasContext.fillStyle = 'black';
+        canvasContext.fillRect(0,0, canvas.width, canvas.height);
+        canvasContext.fillStyle = 'green';
+        for(var i=0; i<tail.length; i++){
+          canvasContext.fillRect(tail[i][0], tail[i][1], 24, 24);
+        }
+        canvasContext.fillStyle = 'red';
+        canvasContext.fillRect(apple[0],apple[1], 24, 24);
+      }
+
+      function generateApple(){
+        var notPlaced = true;
+        while(notPlaced){
+          apple = [];
+          apple.push(Math.floor((Math.random() * 20))*25);
+          apple.push(Math.floor((Math.random() * 20))*25);
+          if(checkForCollisions(apple)){
+            notPlaced = true;
+          } else{
+            notPlaced = false;
+          }
+        }
+        console.log(apple);
+      }
+
+      function moveSnake(){
+        var moveLast = tail.shift();
+        var width = moveLast[0];
+        var height = moveLast[1];
+        moveLast[0] = tail[tail.length-1][0]+(25*direction[0]);
+        moveLast[1] = tail[tail.length-1][1]+(25*direction[1]);
+        if(checkForCollisions(moveLast)){
+          direction = [1, 0];
+          tail = [[200,200],[225,200],[250,200],[275,200],[300,200]];
+          drawSnakeAndApple();
+        } else {
+          if(moveLast[0]>=canvas.width){
+            moveLast[0] = 0;
+          } else if(moveLast[0]<0){
+            moveLast[0] = canvas.width;
+          }
+          if(moveLast[1]>=canvas.height){
+            moveLast[1] = 0;
+          }  else if(moveLast[1]<0){
+            moveLast[1] = canvas.height;
+          }
+          if(moveLast[0]===apple[0] && moveLast[1]==apple[1]){
+            tail.push(apple);
+            tail.unshift([width, height]);
+            generateApple();
+          } else{
+            tail.push(moveLast);
+          }
+          drawSnakeAndApple();
+        }
+      }
+
+      function checkForCollisions(moveLast){
+        var collision = tail.find(el => el[0]===moveLast[0] && el[1]===moveLast[1]);
+        if(collision){
+          return true;
+        }
+        return false;
+      }
+
+    </script>
+  </body>
+</html>
